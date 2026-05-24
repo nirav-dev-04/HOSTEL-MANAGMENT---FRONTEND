@@ -287,8 +287,63 @@ export const LoginRegister = () => {
   };
 
   return (
-    <div style={styles.authContainer} className="animate-fade-in">
+    <div className="auth-container-premium animate-fade-in">
       <style>{`
+        .auth-container-premium {
+          display: flex;
+          min-height: 100vh;
+          width: 100vw;
+          background-color: var(--bg-canvas);
+          flex-direction: row;
+        }
+        .brand-side-premium {
+          flex: 1;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 60px;
+          color: #ffffff;
+          overflow: hidden;
+        }
+        .glow-effect-premium {
+          position: absolute;
+          top: -10%;
+          right: -10%;
+          width: 300px;
+          height: 300px;
+          border-radius: 50%;
+          pointer-events: none;
+        }
+        .brand-content-premium {
+          position: relative;
+          z-index: 2;
+          max-width: 480px;
+        }
+        .stats-card-grid-premium {
+          display: flex;
+          gap: 16px;
+        }
+        .form-side-premium {
+          flex: 1.1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 40px;
+          background-color: var(--bg-canvas);
+          overflow-y: auto;
+        }
+        .form-container-premium {
+          width: 100%;
+          max-width: 460px;
+          background-color: var(--bg-card);
+          border-radius: var(--radius-lg);
+          padding: 40px;
+          box-shadow: 0 10px 30px -5px rgba(0,0,0,0.04);
+          border: 1px solid var(--border-color);
+        }
+
         .submit-btn-premium {
           background-color: var(--primary);
           color: #ffffff;
@@ -350,6 +405,50 @@ export const LoginRegister = () => {
           background: var(--bg-card);
           border-color: var(--border-focus);
         }
+
+        /* Premium Mobile Adaptations */
+        @media (max-width: 768px) {
+          .auth-container-premium {
+            flex-direction: column !important;
+            min-height: 100vh;
+            height: auto !important;
+            width: 100vw;
+          }
+          .brand-side-premium {
+            padding: 40px 24px !important;
+            align-items: center !important;
+            text-align: center !important;
+            flex: none !important;
+          }
+          .brand-content-premium {
+            max-width: 100% !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          .brand-content-premium h1 {
+            font-size: 2.5rem !important;
+          }
+          .stats-card-grid-premium {
+            width: 100%;
+            flex-direction: row;
+            gap: 10px;
+            margin-top: 10px;
+          }
+          .form-side-premium {
+            padding: 30px 16px !important;
+            width: 100% !important;
+            flex: none !important;
+          }
+          .form-container-premium {
+            padding: 30px 20px !important;
+            max-width: 100% !important;
+            border-radius: 16px !important;
+          }
+          .form-container-premium h2 {
+            font-size: 1.6rem !important;
+          }
+        }
       `}</style>
 
       <button 
@@ -366,8 +465,7 @@ export const LoginRegister = () => {
       </button>
 
       {/* Left panel - Branding Side */}
-      <div style={{
-        ...styles.brandSide,
+      <div className="brand-side-premium" style={{
         background: theme === 'dark' 
           ? 'linear-gradient(135deg, #111827 0%, #030712 100%)' 
           : 'linear-gradient(135deg, #052e16 0%, #0f5132 100%)'
@@ -377,8 +475,8 @@ export const LoginRegister = () => {
           background: theme === 'dark' 
             ? 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(15,81,50,0) 70%)'
             : 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(15,81,50,0) 70%)'
-        }}></div>
-        <div style={styles.brandContent}>
+        }} className="glow-effect-premium"></div>
+        <div className="brand-content-premium">
           <div style={{
             ...styles.brandBadge,
             color: theme === 'dark' ? '#10b981' : '#34d399',
@@ -397,7 +495,7 @@ export const LoginRegister = () => {
           }}>
             A state-of-the-art living experience. Report complaints, coordinate with block rectors, and manage your accommodation profile with zero friction.
           </p>
-          <div style={styles.statsCardGrid}>
+          <div className="stats-card-grid-premium">
             <div style={{
               ...styles.statsCardMini,
               backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
@@ -437,8 +535,8 @@ export const LoginRegister = () => {
       </div>
 
       {/* Right panel - Form Side */}
-      <div style={styles.formSide}>
-        <div style={styles.formContainer}>
+      <div className="form-side-premium">
+        <div className="form-container-premium">
           <div style={styles.tabsHeader}>
             <button
               onClick={() => handleTabChange(true)}

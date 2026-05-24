@@ -1691,8 +1691,24 @@ export const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [activeSubFeature, setActiveSubFeature] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // trigger initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const isStudent = user?.role === 'STUDENT';
 
@@ -2061,6 +2077,7 @@ export const DashboardLayout = ({ children }) => {
                 onClick={() => {
                   setActiveSubFeature(null);
                   navigate(link.path);
+                  if (isMobile) setSidebarOpen(false);
                 }}
                 style={{
                   ...styles.navItem,
@@ -2081,7 +2098,10 @@ export const DashboardLayout = ({ children }) => {
           <div style={styles.comingSoonHeader}>INTEGRATED SERVICES</div>
           
           <button
-            onClick={() => setActiveSubFeature('laundry')}
+            onClick={() => {
+              setActiveSubFeature('laundry');
+              if (isMobile) setSidebarOpen(false);
+            }}
             style={{
               ...styles.navItem,
               backgroundColor: activeSubFeature === 'laundry' ? 'var(--primary-light)' : 'transparent',
@@ -2098,7 +2118,10 @@ export const DashboardLayout = ({ children }) => {
           </button>
 
           <button
-            onClick={() => setActiveSubFeature('mess')}
+            onClick={() => {
+              setActiveSubFeature('mess');
+              if (isMobile) setSidebarOpen(false);
+            }}
             style={{
               ...styles.navItem,
               backgroundColor: activeSubFeature === 'mess' ? 'var(--primary-light)' : 'transparent',
@@ -2115,7 +2138,10 @@ export const DashboardLayout = ({ children }) => {
           </button>
 
           <button
-            onClick={() => setActiveSubFeature('fees')}
+            onClick={() => {
+              setActiveSubFeature('fees');
+              if (isMobile) setSidebarOpen(false);
+            }}
             style={{
               ...styles.navItem,
               backgroundColor: activeSubFeature === 'fees' ? 'var(--primary-light)' : 'transparent',
@@ -2144,7 +2170,7 @@ export const DashboardLayout = ({ children }) => {
       {/* Main Panel Area */}
       <div style={{
         ...styles.mainPanel,
-        marginLeft: sidebarOpen ? '260px' : '0px',
+        marginLeft: isMobile ? '0px' : (sidebarOpen ? '260px' : '0px'),
       }}>
         {/* Header bar */}
         <header style={styles.header}>
