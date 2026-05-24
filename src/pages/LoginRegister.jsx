@@ -95,11 +95,11 @@ export const LoginRegister = () => {
     }
     if (name === 'phone') {
       const cleanPhone = value.replace(/[\s()-]+/g, '');
-      const phoneRegex = /^\+?[0-9]{10,14}$/;
+      const phoneRegex = /^[0-9]{10}$/;
       if (!value) {
         errors.phone = 'Phone number is required.';
       } else if (!phoneRegex.test(cleanPhone)) {
-        errors.phone = 'Enter a valid 10 to 12 digit phone number.';
+        errors.phone = 'Enter a valid 10-digit phone number.';
       } else {
         delete errors.phone;
       }
@@ -678,7 +678,8 @@ export const LoginRegister = () => {
                   <input
                     type="tel"
                     name="phone"
-                    placeholder="+91 98765 43210"
+                    placeholder="9876543210"
+                    maxLength="10"
                     required
                     value={formData.phone}
                     onChange={handleInputChange}

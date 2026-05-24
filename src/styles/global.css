@@ -239,6 +239,26 @@ label {
   }
 }
 
+/* Premium Responsive Grid Utilities */
+.grid-2-1-responsive {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.grid-auto-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 992px) {
+  .grid-2-1-responsive {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
 /* ==========================================================================
    Dark Mode Premium Theme Overrides
    ========================================================================== */

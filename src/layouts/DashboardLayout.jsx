@@ -803,7 +803,7 @@ const MessMenuView = ({ user }) => {
 
       {isStudent ? (
         /* ================= STUDENT MENU INTERFACE ================= */
-        <div className="grid-3" style={{ gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <div className="grid-2-1-responsive">
           {/* Active Day Menu Details */}
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
@@ -967,7 +967,7 @@ const MessMenuView = ({ user }) => {
         </div>
       ) : (
         /* ================= RECTOR / ADMIN MENU EDITOR INTERFACE ================= */
-        <div className="grid-3" style={{ gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <div className="grid-2-1-responsive">
           {/* Menu Editor Form */}
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '20px' }}>
@@ -1355,7 +1355,7 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
         </div>
 
         {/* Fee Cards Summary */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+        <div className="grid-auto-cards">
           <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {FeeIcons.pending}
             <div>
@@ -1540,7 +1540,7 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
       </div>
 
       {/* Admin Fee Cards Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+      <div className="grid-auto-cards">
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {FeeIcons.collected}
           <div>
