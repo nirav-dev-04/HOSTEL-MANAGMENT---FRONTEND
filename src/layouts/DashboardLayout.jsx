@@ -1390,7 +1390,7 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
               <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>No invoices found registered under your student account.</div>
             ) : (
               studentInvoices.map((inv) => (
-                <div key={inv.id} style={{
+                <div key={inv.id} className="invoice-card" style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -1405,7 +1405,7 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
                     <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>{inv.id}</span>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '2px', color: 'var(--text-main)', lineHeight: '1.4' }}>{inv.item}</h4>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end', flex: '1 1 auto' }}>
+                  <div className="invoice-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end', flex: '1 1 auto' }}>
                     <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>₹{inv.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     <span style={{
                       fontSize: '0.75rem',
@@ -2182,7 +2182,7 @@ export const DashboardLayout = ({ children }) => {
           <button style={styles.toggleBtn} onClick={() => setSidebarOpen(!sidebarOpen)}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-              <span>{sidebarOpen ? 'Collapse' : 'Expand'}</span>
+              <span className="hide-on-mobile">{sidebarOpen ? 'Collapse' : 'Expand'}</span>
             </span>
           </button>
 
@@ -2221,7 +2221,7 @@ export const DashboardLayout = ({ children }) => {
               </button>
 
               {showNotifications && (
-                <div style={styles.notificationsDropdown}>
+                <div style={styles.notificationsDropdown} className="notifications-dropdown animate-fade-in">
                   <div style={styles.dropdownHeader}>
                     <span>Real-time Notifications</span>
                     <button style={styles.clearBtn} onClick={handleClearNotifications}>Clear</button>
@@ -2250,7 +2250,7 @@ export const DashboardLayout = ({ children }) => {
             {/* Logout controls */}
             <button style={styles.logoutBtn} onClick={handleLogout}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-              <span>Logout</span>
+              <span className="hide-on-mobile">Logout</span>
             </button>
           </div>
         </header>

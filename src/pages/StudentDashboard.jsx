@@ -11,6 +11,8 @@ export const StudentDashboard = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [activeProof, setActiveProof] = useState(null);
+  const [proofLoadError, setProofLoadError] = useState(false);
 
   // Dynamic dashboard warning states for pending fees
   const [hasPendingFees, setHasPendingFees] = useState(false);
@@ -260,7 +262,7 @@ export const StudentDashboard = () => {
         </div>
       </div>
 
-      <div style={styles.contentGrid}>
+      <div className="grid-complaints-layout">
         {/* Lodging Form */}
         <div className="card" style={styles.formContainer}>
           <h3 style={styles.sectionHeading}>Lodge New Complaint</h3>
@@ -291,7 +293,7 @@ export const StudentDashboard = () => {
               />
             </div>
 
-            <div style={styles.gridForm}>
+            <div className="grid-form-2col">
               <div style={styles.inputGroup}>
                 <label>Category</label>
                 <select name="category" value={formData.category} onChange={handleInputChange} style={styles.select}>
@@ -405,21 +407,36 @@ export const StudentDashboard = () => {
                         <div style={styles.dateCell}>{new Date(c.createdAt || Date.now()).toLocaleDateString()}</div>
                         {c.imageUrl && (
                           <div style={styles.mediaContainer}>
-                            {isVideoFile(c.imageUrl) ? (
-                              <video
-                                src={getMediaUrl(c.imageUrl)}
-                                controls
-                                style={styles.mediaVideo}
-                              />
-                            ) : (
-                              <a href={getMediaUrl(c.imageUrl)} target="_blank" rel="noopener noreferrer">
-                                <img
-                                  src={getMediaUrl(c.imageUrl)}
-                                  alt="Proof"
-                                  style={styles.mediaImage}
-                                />
-                              </a>
-                            )}
+                            <button
+                              onClick={() => {
+                                setProofLoadError(false);
+                                setActiveProof({
+                                  url: getMediaUrl(c.imageUrl),
+                                  isVideo: isVideoFile(c.imageUrl),
+                                  title: c.title
+                                });
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(16, 185, 129, 0.08)',
+                                border: '1px solid rgba(16, 185, 129, 0.25)',
+                                color: 'var(--primary)',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                fontFamily: 'var(--font-body)',
+                                outline: 'none'
+                              }}
+                              className="proof-badge-btn"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                              View Media Proof
+                            </button>
                           </div>
                         )}
                       </td>
@@ -469,6 +486,54 @@ export const StudentDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Proof Overlay Modal */}
+      {activeProof && (
+        <div style={styles.modalOverlay} className="animate-fade-in">
+          <div style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h3 style={styles.modalTitle}>Proof of Complaint</h3>
+                <p style={styles.modalSub}>File preview for: <strong>{activeProof.title}</strong></p>
+              </div>
+              <button style={styles.closeModalBtn} onClick={() => setActiveProof(null)}>✕</button>
+            </div>
+            
+            <div style={styles.modalBody}>
+              {proofLoadError ? (
+                <div style={styles.errorPanel}>
+                  <div style={styles.errorIcon}>⚠️</div>
+                  <h4 style={styles.errorTitle}>Media Attachment Recycled</h4>
+                  <p style={styles.errorDesc}>
+                    This proof attachment was stored on Render's ephemeral filesystem and was cleared during a regular server idle restart.
+                  </p>
+                  <div style={styles.errorAdvisory}>
+                    <strong>Status:</strong> Your grievance details and rector action history remain fully active! Only the temporary media proof was pruned.
+                  </div>
+                  <p style={styles.errorTechnical}>
+                    Note: Render Free Tier instances undergo daily recycling. Configuring AWS S3 or Cloudinary is recommended for permanent media storage.
+                  </p>
+                </div>
+              ) : activeProof.isVideo ? (
+                <video
+                  src={activeProof.url}
+                  controls
+                  autoPlay
+                  style={styles.modalMediaVideo}
+                  onError={() => setProofLoadError(true)}
+                />
+              ) : (
+                <img
+                  src={activeProof.url}
+                  alt="Proof of complaint"
+                  style={styles.modalMediaImage}
+                  onError={() => setProofLoadError(true)}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -781,6 +846,112 @@ const styles = {
     maxHeight: '100px',
     borderRadius: '4px',
     display: 'block',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15,23,42,0.4)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    width: '90%',
+    maxWidth: '500px',
+    backgroundColor: 'var(--bg-card)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '30px',
+    boxShadow: 'var(--shadow-lg)',
+    border: '1px solid var(--border-color)',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    borderBottom: '1px solid var(--border-color)',
+    paddingBottom: '16px',
+    marginBottom: '20px',
+  },
+  modalTitle: {
+    fontSize: '1.2rem',
+    color: 'var(--text-main)',
+  },
+  modalSub: {
+    fontSize: '0.8rem',
+    color: 'var(--text-muted)',
+    marginTop: '2px',
+  },
+  closeModalBtn: {
+    border: 'none',
+    background: 'none',
+    fontSize: '1.2rem',
+    color: 'var(--text-muted)',
+    cursor: 'pointer',
+  },
+  modalBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  modalMediaImage: {
+    maxWidth: '100%',
+    maxHeight: '300px',
+    borderRadius: '8px',
+    display: 'block',
+    objectFit: 'contain',
+    margin: '0 auto',
+  },
+  modalMediaVideo: {
+    width: '100%',
+    maxHeight: '300px',
+    borderRadius: '8px',
+    display: 'block',
+    margin: '0 auto',
+  },
+  errorPanel: {
+    backgroundColor: 'var(--status-rejected-bg)',
+    border: '1px solid rgba(239, 68, 68, 0.2)',
+    borderRadius: 'var(--radius-md)',
+    padding: '20px',
+    color: 'var(--text-main)',
+    textAlign: 'center',
+  },
+  errorIcon: {
+    fontSize: '2.5rem',
+    marginBottom: '12px',
+  },
+  errorTitle: {
+    fontSize: '1.1rem',
+    fontWeight: '700',
+    color: 'var(--status-rejected)',
+    marginBottom: '8px',
+  },
+  errorDesc: {
+    fontSize: '0.85rem',
+    color: 'var(--text-main)',
+    lineHeight: '1.45',
+    marginBottom: '16px',
+  },
+  errorAdvisory: {
+    backgroundColor: 'var(--bg-canvas)',
+    border: '1px solid var(--border-color)',
+    borderRadius: '8px',
+    padding: '12px 14px',
+    fontSize: '0.8rem',
+    lineHeight: '1.4',
+    marginBottom: '14px',
+    textAlign: 'left',
+    color: 'var(--text-main)',
+  },
+  errorTechnical: {
+    fontSize: '0.72rem',
+    color: 'var(--text-muted)',
+    lineHeight: '1.35',
   },
 };
 

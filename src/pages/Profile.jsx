@@ -13,7 +13,7 @@ export const Profile = () => {
         <p style={styles.subtitle}>Manage your contact details, security roles, and sector allocations.</p>
       </div>
 
-      <div style={styles.contentGrid}>
+      <div className="grid-profile-layout">
         {/* Profile Card */}
         <div className="card" style={styles.profileCard}>
           <div style={styles.cardHeaderBackground}></div>
@@ -44,7 +44,7 @@ export const Profile = () => {
           <h3 style={styles.detailsTitle}>Hostel Placement Details</h3>
           <p style={styles.detailsSub}>Authorized information synced with university databases.</p>
 
-          <div style={styles.infoFieldsGrid}>
+          <div className="grid-profile-fields">
             <div style={styles.infoField}>
               <label style={styles.fieldLabel}>FULL REGISTERED NAME</label>
               <div style={styles.fieldValue}>{user?.name}</div>
@@ -62,7 +62,9 @@ export const Profile = () => {
 
             <div style={styles.infoField}>
               <label style={styles.fieldLabel}>PRIMARY CONTACT PHONE</label>
-              <div style={styles.fieldValue}>{user?.phone || 'Not Provided'}</div>
+              <div style={styles.fieldValue}>
+                {user?.phone ? (user.phone.length > 10 ? user.phone.slice(-10) : user.phone) : 'Not Provided'}
+              </div>
             </div>
 
             {user?.role === 'STUDENT' && (

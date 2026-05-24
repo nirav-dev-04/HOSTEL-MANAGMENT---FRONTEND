@@ -259,6 +259,55 @@ label {
   }
 }
 
+/* Premium Responsive Profile Grid Utilities */
+.grid-profile-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+}
+
+.grid-profile-fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 992px) {
+  .grid-profile-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .grid-profile-fields {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Premium Responsive Complaint Dashboard Grid Utilities */
+.grid-complaints-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 30px;
+}
+
+.grid-form-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 992px) {
+  .grid-complaints-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .grid-form-2col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 /* ==========================================================================
    Dark Mode Premium Theme Overrides
    ========================================================================== */
@@ -349,5 +398,49 @@ label {
 
 .dark-theme ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
+}
+
+/* ==========================================================================
+   Responsive & Premium Helper Overrides
+   ========================================================================== */
+
+/* Hiding text labels in header for compact mobile viewports */
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+/* Frameless centering for bell notifications on small phone screens */
+@media (max-width: 480px) {
+  .notifications-dropdown {
+    position: fixed !important;
+    top: 65px !important;
+    right: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-width: none !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+}
+
+/* Responsive vertical stacking for Semester Invoices inside the Room Fee Payments View */
+@media (max-width: 576px) {
+  .invoice-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 16px !important;
+    gap: 12px !important;
+  }
+  .invoice-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+  
+  /* Compact cards spacing to avoid mobile viewport squeezing */
+  .card {
+    padding: 16px !important;
+  }
 }
 

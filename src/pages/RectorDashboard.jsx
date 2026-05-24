@@ -28,6 +28,7 @@ export const RectorDashboard = () => {
   const [actioning, setActioning] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [proofLoadError, setProofLoadError] = useState(false);
 
   const fetchComplaints = async () => {
     try {
@@ -52,12 +53,14 @@ export const RectorDashboard = () => {
     setResolutionNote(complaint.resolutionNote || '');
     setErrorMsg('');
     setSuccessMsg('');
+    setProofLoadError(false);
   };
 
   const closeActionModal = () => {
     setActiveComplaint(null);
     setResolutionNote('');
     setModalStatus('');
+    setProofLoadError(false);
   };
 
   const handleActionSubmit = async (e) => {
@@ -259,29 +262,35 @@ export const RectorDashboard = () => {
                   <tr key={c.id} style={styles.tr}>
                     <td style={styles.tdStudent}>
                       <div style={styles.studentName}>{c.studentName || 'Student Hosteller'}</div>
-                      <div style={styles.studentMeta}>Room {c.roomNumber || 'N/A'} • {c.studentPhone || 'No Phone'}</div>
+                      <div style={styles.studentMeta}>Room {c.roomNumber || 'N/A'} • {c.studentPhone ? (c.studentPhone.length > 10 ? c.studentPhone.slice(-10) : c.studentPhone) : 'No Phone'}</div>
                     </td>
                     <td style={styles.tdDetails}>
                       <div style={styles.issueTitle}>{c.title}</div>
                       <p style={styles.issueDesc}>{c.description}</p>
                       <span style={styles.issueDate}>Filed: {new Date(c.createdAt || Date.now()).toLocaleDateString()}</span>
                       {c.imageUrl && (
-                        <div style={styles.mediaContainer}>
-                          {isVideoFile(c.imageUrl) ? (
-                            <video
-                              src={getMediaUrl(c.imageUrl)}
-                              controls
-                              style={styles.mediaVideo}
-                            />
-                          ) : (
-                            <a href={getMediaUrl(c.imageUrl)} target="_blank" rel="noopener noreferrer">
-                              <img
-                                src={getMediaUrl(c.imageUrl)}
-                                alt="Proof"
-                                style={styles.mediaImage}
-                              />
-                            </a>
-                          )}
+                        <div style={{ marginTop: '8px' }}>
+                          <button
+                            onClick={() => openActionModal(c)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              background: 'rgba(15, 81, 50, 0.08)',
+                              border: '1px solid rgba(15, 81, 50, 0.25)',
+                              color: 'var(--primary)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-body)',
+                              outline: 'none'
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                            View Media Proof
+                          </button>
                         </div>
                       )}
                     </td>
@@ -357,23 +366,41 @@ export const RectorDashboard = () => {
             {activeComplaint.imageUrl && (
               <div style={styles.modalMediaSection}>
                 <span style={{ ...styles.modalMediaLabel, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                   Uploaded Media Proof:
                 </span>
-                {isVideoFile(activeComplaint.imageUrl) ? (
+                
+                {proofLoadError ? (
+                  <div style={{
+                    backgroundColor: 'var(--status-rejected-bg)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '14px',
+                    color: 'var(--text-main)',
+                    fontSize: '0.85rem',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: '1.5rem', marginBottom: '6px' }}>⚠️</div>
+                    <strong style={{ color: 'var(--status-rejected)', display: 'block', marginBottom: '4px' }}>Media Proof Recycled</strong>
+                    <span style={{ fontSize: '0.75rem', display: 'block', lineHeight: '1.3', color: 'var(--text-muted)' }}>
+                      This file was stored on Render's ephemeral storage and was wiped out during an idle restart.
+                      The complaint ticket itself is perfectly valid.
+                    </span>
+                  </div>
+                ) : isVideoFile(activeComplaint.imageUrl) ? (
                   <video
                     src={getMediaUrl(activeComplaint.imageUrl)}
                     controls
                     style={styles.modalMediaVideo}
+                    onError={() => setProofLoadError(true)}
                   />
                 ) : (
-                  <a href={getMediaUrl(activeComplaint.imageUrl)} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
-                    <img
-                      src={getMediaUrl(activeComplaint.imageUrl)}
-                      alt="Proof"
-                      style={styles.modalMediaImage}
-                    />
-                  </a>
+                  <img
+                    src={getMediaUrl(activeComplaint.imageUrl)}
+                    alt="Proof"
+                    style={styles.modalMediaImage}
+                    onError={() => setProofLoadError(true)}
+                  />
                 )}
               </div>
             )}
