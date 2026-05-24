@@ -1397,24 +1397,27 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
                   padding: '16px 20px',
                   backgroundColor: 'var(--bg-canvas)',
                   border: '1px solid var(--border-color)',
-                  borderRadius: '12px'
+                  borderRadius: '12px',
+                  flexWrap: 'wrap',
+                  gap: '16px'
                 }}>
-                  <div>
+                  <div style={{ flex: '1 1 250px' }}>
                     <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>{inv.id}</span>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '2px', color: 'var(--text-main)' }}>{inv.item}</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '2px', color: 'var(--text-main)', lineHeight: '1.4' }}>{inv.item}</h4>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>₹{inv.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end', flex: '1 1 auto' }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>₹{inv.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     <span style={{
                       fontSize: '0.75rem',
                       fontWeight: 700,
                       backgroundColor: inv.status === 'PAID' ? 'var(--status-resolved-bg)' : 'var(--status-pending-bg)',
                       color: inv.status === 'PAID' ? 'var(--status-resolved)' : 'var(--status-pending)',
                       padding: '4px 10px',
-                      borderRadius: '6px'
+                      borderRadius: '6px',
+                      whiteSpace: 'nowrap'
                     }}>{inv.status}</span>
                     {inv.status === 'PENDING' && (
-                      <button className="btn btn-primary" onClick={() => handlePayClick(inv)} style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 600 }}>
+                      <button className="btn btn-primary" onClick={() => handlePayClick(inv)} style={{ padding: '8px 14px', fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
                         Pay Now
                       </button>
                     )}
@@ -1594,7 +1597,8 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
           </div>
         </div>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+        <div style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem', minWidth: '750px' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' }}>
               <th style={{ padding: '12px 16px' }}>STUDENT</th>
@@ -1682,6 +1686,7 @@ const RoomFeesView = ({ user, invoices, setInvoices }) => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
