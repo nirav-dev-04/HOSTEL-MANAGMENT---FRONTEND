@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-// Get base URL from environment or default to local Spring Boot port
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9001';
+// Get base URL dynamically based on environment or fallback to live Render server
+const getDynamicBaseUrl = () => {
+  // If we are developing locally, default to localhost Spring Boot server
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:9001';
+  }
+  // Otherwise, default to the live, 24/7 cloud backend on Render
+  return 'https://smart-hostel-management-system-mqip.onrender.com';
+};
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || getDynamicBaseUrl();
 
 // Create Axios custom instance
 const apiClient = axios.create({
