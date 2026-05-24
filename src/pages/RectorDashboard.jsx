@@ -202,13 +202,13 @@ export const RectorDashboard = () => {
 
       {/* Complaints Management Console */}
       <div className="card" style={styles.tableCard}>
-        <div style={styles.tableHeaderControls}>
+        <div style={styles.tableHeaderControls} className="table-header-controls">
           <div>
             <h3 style={styles.tableTitle}>Block Complaint Registry</h3>
             <p style={styles.tableSubtitle}>Review, manage status transitions, and issue resolution instructions to maintenance units.</p>
           </div>
 
-          <div style={styles.filtersWrapper}>
+          <div style={styles.filtersWrapper} className="filters-wrapper">
             <input
               type="text"
               placeholder="Search by issue or student room..."
@@ -244,7 +244,7 @@ export const RectorDashboard = () => {
             <p>Either all complaints are processed, or your search query did not yield any matches.</p>
           </div>
         ) : (
-          <div style={styles.tableWrapper}>
+          <div style={styles.tableWrapper} className="table-wrapper">
             <table style={styles.table}>
               <thead>
                 <tr>

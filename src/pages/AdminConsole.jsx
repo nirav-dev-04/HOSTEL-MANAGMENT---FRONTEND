@@ -223,7 +223,7 @@ export const AdminConsole = () => {
       </div>
 
       {/* Tab Controls */}
-      <div style={styles.tabContainer}>
+      <div style={styles.tabContainer} className="tab-container">
         <button
           onClick={() => setActiveTab('users')}
           style={{
@@ -233,6 +233,7 @@ export const AdminConsole = () => {
             fontWeight: activeTab === 'users' ? '700' : '500',
             backgroundColor: 'transparent',
           }}
+          className="tab-button"
         >
           User Directory & Occupancy
         </button>
@@ -245,6 +246,7 @@ export const AdminConsole = () => {
             fontWeight: activeTab === 'complaints' ? '700' : '500',
             backgroundColor: 'transparent',
           }}
+          className="tab-button"
         >
           Global Complaint Ledger
         </button>
@@ -254,13 +256,13 @@ export const AdminConsole = () => {
         <div style={styles.mainContentGrid} className="animate-fade-in">
           {/* User privilege section */}
           <div className="card" style={styles.usersCard}>
-            <div style={styles.tableHeaderControls}>
+            <div style={styles.tableHeaderControls} className="table-header-controls">
               <div>
                 <h3 style={styles.tableTitle}>Global User Index</h3>
                 <p style={styles.tableSubtitle}>Search, review credentials, and verify room allocation mappings.</p>
               </div>
 
-              <div style={styles.filtersWrapper}>
+              <div style={styles.filtersWrapper} className="filters-wrapper">
                 <input
                   type="text"
                   placeholder="Search by name, block, room..."
@@ -292,7 +294,7 @@ export const AdminConsole = () => {
                 <p>Try modifying your filters or search keywords.</p>
               </div>
             ) : (
-              <div style={styles.tableWrapper}>
+              <div style={styles.tableWrapper} className="table-wrapper">
                 <table style={styles.table}>
                   <thead>
                     <tr>
@@ -409,13 +411,13 @@ export const AdminConsole = () => {
       ) : (
         /* Global Complaint Ledger View */
         <div className="card animate-fade-in" style={styles.tableCardFull}>
-          <div style={styles.tableHeaderControls}>
+          <div style={styles.tableHeaderControls} className="table-header-controls">
             <div>
               <h3 style={styles.tableTitle}>Global Complaint Ledger</h3>
               <p style={styles.tableSubtitle}>System-wide hosteller grievance records. Delegate rectory enforcement units.</p>
             </div>
 
-            <div style={styles.filtersWrapper}>
+            <div style={styles.filtersWrapper} className="filters-wrapper">
               <input
                 type="text"
                 placeholder="Search issues, students..."
@@ -465,7 +467,7 @@ export const AdminConsole = () => {
                <p>Either all rooms are clear, or your active search terms did not match database records.</p>
              </div>
            ) : (
-             <div style={styles.tableWrapper}>
+             <div style={styles.tableWrapper} className="table-wrapper">
                <table style={styles.table}>
                  <thead>
                    <tr>
