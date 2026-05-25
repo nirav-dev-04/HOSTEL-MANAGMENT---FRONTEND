@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import webSocketService from '../services/websocket';
+import { adminApi } from '../services/api';
 import '../styles/global.css';
 
 // ==========================================
@@ -23,11 +24,7 @@ const LaundryTrackerView = ({ user }) => {
 
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('smart_hostel_laundry_history');
-    return saved ? JSON.parse(saved) : [
-      { date: 'May 20, 2026', machine: 'Washer 1', slot: '10:00 AM - 11:00 AM', status: 'COMPLETED', color: 'var(--status-resolved)', studentName: 'archan', block: 'Block F', room: '103/3' },
-      { date: 'May 18, 2026', machine: 'Dryer 2', slot: '02:30 PM - 03:30 PM', status: 'COMPLETED', color: 'var(--status-resolved)', studentName: 'archan', block: 'Block F', room: '103/3' },
-      { date: 'May 14, 2026', machine: 'Washer 3', slot: '06:00 PM - 07:00 PM', status: 'COMPLETED', color: 'var(--status-resolved)', studentName: 'dhruv', block: 'Block B', room: '202' },
-    ];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [booked, setBooked] = useState(false);
@@ -1731,14 +1728,7 @@ export const DashboardLayout = ({ children }) => {
   const [invoices, setInvoices] = useState(() => {
     const saved = localStorage.getItem('smart_hostel_invoices');
     if (saved) return JSON.parse(saved);
-
-    return [
-      { id: 'INV-83742', item: 'Hostel Accommodation Rent (Semester 2)', amount: 110000, status: 'PENDING', dueDate: 'June 15, 2026', studentName: 'archan', studentEmail: 'archan@gmail.com', block: 'Block F', room: '103/3' },
-      { id: 'INV-72948', item: 'Mess & Dining Food Card Service (Semester 1)', amount: 12000, status: 'PAID', dueDate: 'Expired', studentName: 'archan', studentEmail: 'archan@gmail.com', block: 'Block F', room: '103/3' },
-      { id: 'INV-51109', item: 'Refundable Security & Damage Deposit', amount: 10000, status: 'PAID', dueDate: 'Expired', studentName: 'archan', studentEmail: 'archan@gmail.com', block: 'Block F', room: '103/3' },
-      { id: 'INV-10928', item: 'Hostel Accommodation Rent (Semester 2)', amount: 55000, status: 'PENDING', dueDate: 'June 15, 2026', studentName: 'kunj', studentEmail: 'kunj@gmail.com', block: 'Block B', room: 'Unassigned' },
-      { id: 'INV-90231', item: 'Mess & Dining Food Card Service (Semester 2)', amount: 12000, status: 'PAID', dueDate: 'Expired', studentName: 'dhruv', studentEmail: 'dhruv@gmail.com', block: 'Block F', room: 'Unassigned' }
-    ];
+    return [];
   });
 
   // Local storage invoice sync
@@ -1842,7 +1832,108 @@ export const DashboardLayout = ({ children }) => {
       }
     }
   }, [isStudent, user, invoices]);
-  
+
+  // Connect invoices to backend database: purge deleted students & pre-generate for new registered database students
+  useEffect(() => {
+    const syncInvoicesWithDatabase = async () => {
+      if (user && (user.role === 'ADMIN' || user.role === 'RECTOR')) {
+        try {
+          const res = await adminApi.getAllUsers();
+          if (res && res.success && res.data) {
+            const dbUsers = res.data;
+            const dbStudentNames = new Set(
+              dbUsers
+                .filter(u => u.role === 'STUDENT')
+                .map(u => u.name.toLowerCase())
+            );
+
+            // 1. Purge invoices of students who do not exist in the database
+            setInvoices(prev => {
+              const filtered = prev.filter(inv => {
+                const invNameLower = inv.studentName?.toLowerCase();
+                return dbStudentNames.has(invNameLower);
+              });
+              
+              // 2. Pre-generate invoices for registered students in the database who don't have any invoices yet
+              const nextInvoices = [...filtered];
+              dbUsers
+                .filter(u => u.role === 'STUDENT')
+                .forEach(student => {
+                  const studentNameLower = student.name.toLowerCase();
+                  const studentHasInvoices = nextInvoices.some(
+                    inv => inv.studentName?.toLowerCase() === studentNameLower
+                  );
+
+                  if (!studentHasInvoices) {
+                    const rentAmount = getHostelRentForBlock(student.hostelBlock);
+                    const generated = [
+                      {
+                        id: `INV-${Math.floor(10000 + Math.random() * 90000)}`,
+                        item: 'Hostel Accommodation Rent (Semester 2)',
+                        amount: rentAmount,
+                        status: 'PENDING',
+                        dueDate: 'June 15, 2026',
+                        studentName: student.name,
+                        studentEmail: student.email || `${student.name.toLowerCase()}@university.edu`,
+                        block: student.hostelBlock || 'Block A',
+                        room: student.roomNumber || 'Unassigned'
+                      },
+                      {
+                        id: `INV-${Math.floor(10000 + Math.random() * 90000)}`,
+                        item: 'Mess & Dining Food Card Service (Semester 2)',
+                        amount: 12000,
+                        status: 'PENDING',
+                        dueDate: 'June 15, 2026',
+                        studentName: student.name,
+                        studentEmail: student.email || `${student.name.toLowerCase()}@university.edu`,
+                        block: student.hostelBlock || 'Block A',
+                        room: student.roomNumber || 'Unassigned'
+                      },
+                      {
+                        id: `INV-${Math.floor(10000 + Math.random() * 90000)}`,
+                        item: 'Refundable Security & Damage Deposit',
+                        amount: 10000,
+                        status: 'PENDING',
+                        dueDate: 'June 15, 2026',
+                        studentName: student.name,
+                        studentEmail: student.email || `${student.name.toLowerCase()}@university.edu`,
+                        block: student.hostelBlock || 'Block A',
+                        room: student.roomNumber || 'Unassigned'
+                      }
+                    ];
+                    nextInvoices.push(...generated);
+                  }
+                });
+
+              if (JSON.stringify(prev) !== JSON.stringify(nextInvoices)) {
+                localStorage.setItem('smart_hostel_invoices', JSON.stringify(nextInvoices));
+                return nextInvoices;
+              }
+              return prev;
+            });
+
+            // 3. Purge laundry history of students who do not exist in the database
+            const savedLaundry = localStorage.getItem('smart_hostel_laundry_history');
+            if (savedLaundry) {
+              const laundryHistory = JSON.parse(savedLaundry);
+              const filteredLaundry = laundryHistory.filter(row => {
+                const rowNameLower = row.studentName?.toLowerCase();
+                return dbStudentNames.has(rowNameLower);
+              });
+              if (JSON.stringify(laundryHistory) !== JSON.stringify(filteredLaundry)) {
+                localStorage.setItem('smart_hostel_laundry_history', JSON.stringify(filteredLaundry));
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Failed to sync invoices with database users:', err);
+        }
+      }
+    };
+
+    syncInvoicesWithDatabase();
+  }, [user]);
+
   // Theme Management
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   useEffect(() => {
