@@ -21,7 +21,9 @@ export const AdminConsole = () => {
   const getMediaUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    return `${API_BASE_URL}${path}`;
+    const cleanBase = API_BASE_URL.replace(/\/+$/, '');
+    const cleanPath = path.replace(/^\/+/, '');
+    return `${cleanBase}/${cleanPath}`;
   };
 
   const isVideoFile = (path) => {
