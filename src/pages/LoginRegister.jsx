@@ -11,6 +11,7 @@ export const LoginRegister = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [showColdStartMessage, setShowColdStartMessage] = useState(false);
 
   // Theme Management
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -202,6 +203,12 @@ export const LoginRegister = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
+    setShowColdStartMessage(false);
+
+    const wakeupTimer = setTimeout(() => {
+      setShowColdStartMessage(true);
+    }, 2500);
+
     try {
       const user = await login(formData.email, formData.password);
       if (user.role === 'STUDENT') {
@@ -214,6 +221,8 @@ export const LoginRegister = () => {
     } catch (err) {
       setErrorMsg(err.message || 'Login failed. Please check your credentials.');
     } finally {
+      clearTimeout(wakeupTimer);
+      setShowColdStartMessage(false);
       setLoading(false);
     }
   };
@@ -251,6 +260,11 @@ export const LoginRegister = () => {
     setLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
+    setShowColdStartMessage(false);
+
+    const wakeupTimer = setTimeout(() => {
+      setShowColdStartMessage(true);
+    }, 2500);
 
     const payload = {
       name: formData.name,
@@ -282,6 +296,8 @@ export const LoginRegister = () => {
     } catch (err) {
       setErrorMsg(err.message || 'Registration failed. Please check your details.');
     } finally {
+      clearTimeout(wakeupTimer);
+      setShowColdStartMessage(false);
       setLoading(false);
     }
   };
@@ -648,6 +664,28 @@ export const LoginRegister = () => {
                 )}
               </button>
 
+              {showColdStartMessage && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                  backgroundColor: theme === 'dark' ? 'rgba(245, 158, 11, 0.06)' : 'rgba(245, 158, 11, 0.08)',
+                  border: theme === 'dark' ? '1px solid rgba(245, 158, 11, 0.15)' : '1px solid rgba(245, 158, 11, 0.25)',
+                  color: theme === 'dark' ? '#fbbf24' : '#b45309',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  lineHeight: '1.4'
+                }} className="animate-fade-in">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <div>
+                    <strong>Waking up cloud server...</strong><br />
+                    Since we use a secure free-tier server, the database might take 30-50 seconds to boot on first launch after inactivity. Thank you for your patience!
+                  </div>
+                </div>
+              )}
+
 
             </form>
           ) : (
@@ -889,6 +927,28 @@ export const LoginRegister = () => {
                   </span>
                 )}
               </button>
+
+              {showColdStartMessage && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                  backgroundColor: theme === 'dark' ? 'rgba(245, 158, 11, 0.06)' : 'rgba(245, 158, 11, 0.08)',
+                  border: theme === 'dark' ? '1px solid rgba(245, 158, 11, 0.15)' : '1px solid rgba(245, 158, 11, 0.25)',
+                  color: theme === 'dark' ? '#fbbf24' : '#b45309',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  lineHeight: '1.4'
+                }} className="animate-fade-in">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <div>
+                    <strong>Waking up cloud server...</strong><br />
+                    Since we use a secure free-tier server, the database might take 30-50 seconds to boot on first launch after inactivity. Thank you for your patience!
+                  </div>
+                </div>
+              )}
 
 
             </form>
