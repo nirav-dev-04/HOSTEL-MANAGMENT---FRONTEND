@@ -123,27 +123,39 @@ export const AdminConsole = () => {
 
   useEffect(() => {
     const loadAdminData = async () => {
+      setLoading(true);
+      
+      // Fetch users
       try {
-        const [usersRes, analyticsRes, complaintsRes] = await Promise.all([
-          adminApi.getAllUsers(),
-          adminApi.getDashboardAnalytics(),
-          adminApi.getAllComplaints(),
-        ]);
-
+        const usersRes = await adminApi.getAllUsers();
         if (usersRes.success && usersRes.data) {
           setUsers(usersRes.data);
         }
+      } catch (err) {
+        console.error('Failed to load admin users:', err);
+      }
+
+      // Fetch analytics
+      try {
+        const analyticsRes = await adminApi.getDashboardAnalytics();
         if (analyticsRes.success && analyticsRes.data) {
           setAnalytics(analyticsRes.data);
         }
+      } catch (err) {
+        console.error('Failed to load admin analytics:', err);
+      }
+
+      // Fetch complaints
+      try {
+        const complaintsRes = await adminApi.getAllComplaints();
         if (complaintsRes.success && complaintsRes.data) {
           setComplaints(complaintsRes.data);
         }
       } catch (err) {
-        console.error('Failed to load admin logs:', err);
-      } finally {
-        setLoading(false);
+        console.error('Failed to load admin complaints:', err);
       }
+
+      setLoading(false);
     };
 
     loadAdminData();
