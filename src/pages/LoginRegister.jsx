@@ -630,6 +630,7 @@ export const LoginRegister = () => {
                   name="email"
                   placeholder="name@university.edu"
                   required
+                  autoComplete="off"
                   value={formData.email}
                   onChange={handleInputChange}
                   style={{
@@ -650,6 +651,7 @@ export const LoginRegister = () => {
                   name="password"
                   placeholder="••••••••"
                   required
+                  autoComplete="off"
                   value={formData.password}
                   onChange={handleInputChange}
                 />
@@ -741,6 +743,7 @@ export const LoginRegister = () => {
                     name="email"
                     placeholder="john.doe@university.edu"
                     required
+                    autoComplete="off"
                     value={formData.email}
                     onChange={handleInputChange}
                     style={{
@@ -761,6 +764,7 @@ export const LoginRegister = () => {
                     name="password"
                     placeholder="••••••••"
                     required
+                    autoComplete="new-password"
                     value={formData.password}
                     onChange={handlePasswordChange}
                   />

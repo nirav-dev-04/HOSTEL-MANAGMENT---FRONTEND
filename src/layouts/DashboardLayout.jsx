@@ -10,9 +10,21 @@ import '../styles/global.css';
 // ==========================================
 const LaundryTrackerView = ({ user }) => {
   const isStudent = user?.role === 'STUDENT';
+  const isAdmin = user?.role === 'ADMIN';
+  const isRector = user?.role === 'RECTOR';
+
+  // Get list of blocks this user can manage
+  const blocks = isStudent 
+    ? [user?.hostelBlock || 'Block A'] 
+    : isRector 
+      ? (user?.hostelBlock ? user.hostelBlock.split(', ').filter(Boolean) : ['Block A'])
+      : ['Block A', 'Block B', 'Block C', 'Block D', 'Block E', 'Block F'];
+
+  const [activeBlock, setActiveBlock] = useState(blocks[0] || 'Block A');
 
   const [machines, setMachines] = useState(() => {
-    const saved = localStorage.getItem('smart_hostel_laundry_machines');
+    const defaultBlock = blocks[0] || 'Block A';
+    const saved = localStorage.getItem(`smart_hostel_laundry_machines_${defaultBlock}`);
     return saved ? JSON.parse(saved) : [
       { id: 1, name: 'Washer 1 (High Capacity)', status: 'BUSY', info: '12 mins remaining', color: 'var(--status-pending)' },
       { id: 2, name: 'Washer 2 (Standard)', status: 'AVAILABLE', info: 'Ready for use', color: 'var(--status-resolved)' },
@@ -23,20 +35,43 @@ const LaundryTrackerView = ({ user }) => {
   });
 
   const [history, setHistory] = useState(() => {
-    const saved = localStorage.getItem('smart_hostel_laundry_history');
+    const defaultBlock = blocks[0] || 'Block A';
+    const saved = localStorage.getItem(`smart_hostel_laundry_history_${defaultBlock}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [booked, setBooked] = useState(false);
   const [bookingData, setBookingData] = useState({ machineId: '2', slot: '04:00 PM - 05:00 PM' });
 
+  // Load machines and history when activeBlock changes
   useEffect(() => {
-    localStorage.setItem('smart_hostel_laundry_machines', JSON.stringify(machines));
-  }, [machines]);
+    const savedMachines = localStorage.getItem(`smart_hostel_laundry_machines_${activeBlock}`);
+    if (savedMachines) {
+      setMachines(JSON.parse(savedMachines));
+    } else {
+      const defaultMachines = [
+        { id: 1, name: 'Washer 1 (High Capacity)', status: 'BUSY', info: '12 mins remaining', color: 'var(--status-pending)' },
+        { id: 2, name: 'Washer 2 (Standard)', status: 'AVAILABLE', info: 'Ready for use', color: 'var(--status-resolved)' },
+        { id: 3, name: 'Washer 3 (Standard)', status: 'AVAILABLE', info: 'Ready for use', color: 'var(--status-resolved)' },
+        { id: 4, name: 'Dryer 1 (Eco Temp)', status: 'BUSY', info: '28 mins remaining', color: 'var(--status-pending)' },
+        { id: 5, name: 'Dryer 2 (High Heat)', status: 'AVAILABLE', info: 'Ready for use', color: 'var(--status-resolved)' },
+      ];
+      setMachines(defaultMachines);
+      localStorage.setItem(`smart_hostel_laundry_machines_${activeBlock}`, JSON.stringify(defaultMachines));
+    }
+
+    const savedHistory = localStorage.getItem(`smart_hostel_laundry_history_${activeBlock}`);
+    setHistory(savedHistory ? JSON.parse(savedHistory) : []);
+  }, [activeBlock]);
+
+  // Sync to localStorage only when machines or history updates for the CURRENT activeBlock
+  useEffect(() => {
+    localStorage.setItem(`smart_hostel_laundry_machines_${activeBlock}`, JSON.stringify(machines));
+  }, [machines, activeBlock]);
 
   useEffect(() => {
-    localStorage.setItem('smart_hostel_laundry_history', JSON.stringify(history));
-  }, [history]);
+    localStorage.setItem(`smart_hostel_laundry_history_${activeBlock}`, JSON.stringify(history));
+  }, [history, activeBlock]);
 
   const handleBook = (e) => {
     e.preventDefault();
@@ -71,7 +106,7 @@ const LaundryTrackerView = ({ user }) => {
       status: 'BOOKED',
       color: 'var(--status-progress)',
       studentName: user?.name || 'archan',
-      block: user?.hostelBlock || 'Block F',
+      block: activeBlock,
       room: user?.roomNumber || '103/3'
     };
     setHistory(prev => [newLog, ...prev]);
@@ -126,7 +161,7 @@ const LaundryTrackerView = ({ user }) => {
   const studentBookings = isStudent
     ? history.filter(row => row.studentName === (user?.name || 'archan'))
     : user?.role === 'RECTOR'
-      ? history.filter(row => row.block === user?.hostelBlock)
+      ? history.filter(row => row.block === activeBlock)
       : history; // Admin sees all
 
   // Telemetry counts
@@ -148,6 +183,31 @@ const LaundryTrackerView = ({ user }) => {
             : 'Centralized laundry command console. Toggle machine operations, monitor active cycles, and review the student ledger.'}
         </p>
       </div>
+
+      {/* Block Selector for Rectors/Admins */}
+      {blocks.length > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '-8px', marginBottom: '-8px', justifyContent: 'flex-end' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>SELECT BLOCK COMMAND DESK:</label>
+          <select
+            value={activeBlock}
+            onChange={(e) => setActiveBlock(e.target.value)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-card)',
+              color: 'var(--text-main)',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            {blocks.map(b => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Telemetry Dashboard Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
@@ -403,7 +463,7 @@ const LaundryTrackerView = ({ user }) => {
               <h2 style={{ fontSize: '1.2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>Laundry Analytics Panel</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                  Washing machines and dryers are currently operating in <strong>{user?.hostelBlock || 'All Blocks'}</strong>. 
+                  Washing machines and dryers are currently operating in <strong>{activeBlock}</strong>. 
                   {user?.role === 'RECTOR' 
                     ? 'Rectors have write authority to release busy slots and toggle machine service parameters.'
                     : 'System Administrators have read-only access to view bookings and global loads across all blocks. Operational parameters can only be toggled by Block Rectors.'}
@@ -483,11 +543,23 @@ const LaundryTrackerView = ({ user }) => {
 // ==========================================
 const MessMenuView = ({ user }) => {
   const isStudent = user?.role === 'STUDENT';
+  const isAdmin = user?.role === 'ADMIN';
+  const isRector = user?.role === 'RECTOR';
+
+  // Get list of blocks this user can manage
+  const blocks = isStudent 
+    ? [user?.hostelBlock || 'Block A'] 
+    : isRector 
+      ? (user?.hostelBlock ? user.hostelBlock.split(', ').filter(Boolean) : ['Block A'])
+      : ['Block A', 'Block B', 'Block C', 'Block D', 'Block E', 'Block F'];
+
+  const [activeBlock, setActiveBlock] = useState(blocks[0] || 'Block A');
   const [activeDay, setActiveDay] = useState('Monday');
   
   // Persisted menu data
   const [menu, setMenu] = useState(() => {
-    const saved = localStorage.getItem('smart_hostel_mess_menu');
+    const defaultBlock = blocks[0] || 'Block A';
+    const saved = localStorage.getItem(`smart_hostel_mess_menu_${defaultBlock}`);
     return saved ? JSON.parse(saved) : {
       Monday: {
         breakfast: 'Masala Dosa, Sambhar, Coconut Chutney, Banana, Tea/Coffee',
@@ -536,7 +608,8 @@ const MessMenuView = ({ user }) => {
 
   // Persisted dining feedback votes per day
   const [votes, setVotes] = useState(() => {
-    const saved = localStorage.getItem('smart_hostel_mess_votes');
+    const defaultBlock = blocks[0] || 'Block A';
+    const saved = localStorage.getItem(`smart_hostel_mess_votes_${defaultBlock}`);
     return saved ? JSON.parse(saved) : {
       Monday: { liked: 0, disliked: 0, votedUsers: {} },
       Tuesday: { liked: 0, disliked: 0, votedUsers: {} },
@@ -560,7 +633,8 @@ const MessMenuView = ({ user }) => {
 
   // Menu Approval States per day
   const [approvals, setApprovals] = useState(() => {
-    const saved = localStorage.getItem('smart_hostel_mess_approvals');
+    const defaultBlock = blocks[0] || 'Block A';
+    const saved = localStorage.getItem(`smart_hostel_mess_approvals_${defaultBlock}`);
     return saved ? JSON.parse(saved) : {
       Monday: 'APPROVED',
       Tuesday: 'APPROVED',
@@ -594,25 +668,107 @@ const MessMenuView = ({ user }) => {
     }
   }, [activeDay, menu]);
 
+  // Load menu, votes, approvals when activeBlock changes
   useEffect(() => {
-    localStorage.setItem('smart_hostel_mess_menu', JSON.stringify(menu));
-  }, [menu]);
-
-  useEffect(() => {
-    localStorage.setItem('smart_hostel_mess_votes', JSON.stringify(votes));
-  }, [votes]);
-
-  // Sync tracked meals per student
-  useEffect(() => {
-    if (user?.name) {
-      const keyName = `smart_hostel_tracked_meals_${user.name}`;
-      localStorage.setItem(keyName, JSON.stringify(trackedMeals));
+    const savedMenu = localStorage.getItem(`smart_hostel_mess_menu_${activeBlock}`);
+    if (savedMenu) {
+      setMenu(JSON.parse(savedMenu));
+    } else {
+      const defaultMenu = {
+        Monday: {
+          breakfast: 'Masala Dosa, Sambhar, Coconut Chutney, Banana, Tea/Coffee',
+          lunch: 'Paneer Butter Masala, Dal Makhani, Butter Roti, Basmati Rice, Salad, Gulab Jamun',
+          highTea: 'Veg Samosa, Mint Chutney, Tea/Coffee',
+          dinner: 'Jeera Rice, Yellow Dal Fry, Tandoori Roti, Aloo Gobi, Papad, Curd'
+        },
+        Tuesday: {
+          breakfast: 'Idli, Vada, Sambhar, Chutney, Apple, Milk/Tea',
+          lunch: 'Chole Bhature, Veg Pulao, Raita, Salad, Pickle, Kheer',
+          highTea: 'Veg Sandwich, Tomato Ketchup, Tea/Coffee',
+          dinner: 'Matar Paneer, Mix Veg, Roti, Rice, Tomato Soup'
+        },
+        Wednesday: {
+          breakfast: 'Poha, Sev, Jalebi, Sprouts, Banana, Tea/Coffee',
+          lunch: 'Veg Biryani, Salan, Onion Raita, Roomali Roti, Mix Veg Kofta, Sweet Lassi',
+          highTea: 'Aloo Bonda, Green Sauce, Tea',
+          dinner: 'Dal Tadka, Sev Tomato Sabzi, Chapati, Steamed Rice, Butter Milk'
+        },
+        Thursday: {
+          breakfast: 'Aloo Paratha, Butter, Curd, Fruit Juice, Tea/Coffee',
+          lunch: 'Rajma Chawal, Kadhi Pakora, Jeera Roti, Mix Salad, Boondi Raita, Ice Cream',
+          highTea: 'Dhokla, Chili, Green Chutney, Tea',
+          dinner: 'Bhindi Masala, Dal Fry, Phulka Roti, Rice, Tomato Salad'
+        },
+        Friday: {
+          breakfast: 'Upma, Coconut Chutney, Eggs/Fruit Cup, Tea/Coffee',
+          lunch: 'Kadhai Paneer, Dal Double Tadka, Naan, Veg Pulao, Papad, Shrikhand',
+          highTea: 'Bread Pakoda, Sweet Chutney, Tea/Coffee',
+          dinner: 'Baingan Bharta, Gujarati Dal, Rotla/Roti, Rice, Cucumber Raita'
+        },
+        Saturday: {
+          breakfast: 'Uttapam, Sambhar, Chutney, Fresh Fruits, Tea/Coffee',
+          lunch: 'Veg Hakka Noodles, Manchurian Gravy, Fried Rice, Spring Roll, Kimchi Salad',
+          highTea: 'Kachori, Sweet Sauce, Tea/Coffee',
+          dinner: 'Khichdi, Kadhi, Aloo Fry, Papad, Garlic Chutney'
+        },
+        Sunday: {
+          breakfast: 'Chole Kulche, Pickle, Fruit Salad, Milk/Tea/Coffee',
+          lunch: 'Shahi Paneer, Veg Kofta, Garlic Naan, Rice, Sweet Boondi, Ice Cream',
+          highTea: 'Hot Veg Puff, Chili Sauce, Tea/Coffee',
+          dinner: 'Paneer Biryani, Veg Raita, Laccha Onion, Rabri'
+        }
+      };
+      setMenu(defaultMenu);
+      localStorage.setItem(`smart_hostel_mess_menu_${activeBlock}`, JSON.stringify(defaultMenu));
     }
-  }, [trackedMeals, user]);
+
+    const savedVotes = localStorage.getItem(`smart_hostel_mess_votes_${activeBlock}`);
+    if (savedVotes) {
+      setVotes(JSON.parse(savedVotes));
+    } else {
+      const defaultVotes = {
+        Monday: { liked: 0, disliked: 0, votedUsers: {} },
+        Tuesday: { liked: 0, disliked: 0, votedUsers: {} },
+        Wednesday: { liked: 0, disliked: 0, votedUsers: {} },
+        Thursday: { liked: 0, disliked: 0, votedUsers: {} },
+        Friday: { liked: 0, disliked: 0, votedUsers: {} },
+        Saturday: { liked: 0, disliked: 0, votedUsers: {} },
+        Sunday: { liked: 0, disliked: 0, votedUsers: {} }
+      };
+      setVotes(defaultVotes);
+      localStorage.setItem(`smart_hostel_mess_votes_${activeBlock}`, JSON.stringify(defaultVotes));
+    }
+
+    const savedApprovals = localStorage.getItem(`smart_hostel_mess_approvals_${activeBlock}`);
+    if (savedApprovals) {
+      setApprovals(JSON.parse(savedApprovals));
+    } else {
+      const defaultApprovals = {
+        Monday: 'APPROVED',
+        Tuesday: 'APPROVED',
+        Wednesday: 'APPROVED',
+        Thursday: 'APPROVED',
+        Friday: 'APPROVED',
+        Saturday: 'APPROVED',
+        Sunday: 'APPROVED'
+      };
+      setApprovals(defaultApprovals);
+      localStorage.setItem(`smart_hostel_mess_approvals_${activeBlock}`, JSON.stringify(defaultApprovals));
+    }
+  }, [activeBlock]);
+
+  // Sync to localStorage only when menu, votes, or approvals updates for the CURRENT activeBlock
+  useEffect(() => {
+    localStorage.setItem(`smart_hostel_mess_menu_${activeBlock}`, JSON.stringify(menu));
+  }, [menu, activeBlock]);
 
   useEffect(() => {
-    localStorage.setItem('smart_hostel_mess_approvals', JSON.stringify(approvals));
-  }, [approvals]);
+    localStorage.setItem(`smart_hostel_mess_votes_${activeBlock}`, JSON.stringify(votes));
+  }, [votes, activeBlock]);
+
+  useEffect(() => {
+    localStorage.setItem(`smart_hostel_mess_approvals_${activeBlock}`, JSON.stringify(approvals));
+  }, [approvals, activeBlock]);
 
   const mealNutrition = {
     breakfast: { cal: 500, prot: 18, carbs: 65 },
@@ -749,6 +905,31 @@ const MessMenuView = ({ user }) => {
           </div>
         )}
       </div>
+
+      {/* Block Selector for Rectors/Admins */}
+      {blocks.length > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '-8px', marginBottom: '-8px', justifyContent: 'flex-end' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}>SELECT MESS COMMAND DESK:</label>
+          <select
+            value={activeBlock}
+            onChange={(e) => setActiveBlock(e.target.value)}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-card)',
+              color: 'var(--text-main)',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            {blocks.map(b => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Weekday Switch Tabs */}
       <div style={{
