@@ -43,6 +43,8 @@ const LaundryTrackerView = ({ user }) => {
   const [booked, setBooked] = useState(false);
   const [bookingData, setBookingData] = useState({ machineId: '2', slot: '04:00 PM - 05:00 PM' });
 
+  const loadedBlockRef = React.useRef(activeBlock);
+
   // Load machines and history when activeBlock changes
   useEffect(() => {
     const savedMachines = localStorage.getItem(`smart_hostel_laundry_machines_${activeBlock}`);
@@ -62,15 +64,22 @@ const LaundryTrackerView = ({ user }) => {
 
     const savedHistory = localStorage.getItem(`smart_hostel_laundry_history_${activeBlock}`);
     setHistory(savedHistory ? JSON.parse(savedHistory) : []);
+    
+    // Set the ref to denote loaded states are now aligned with activeBlock
+    loadedBlockRef.current = activeBlock;
   }, [activeBlock]);
 
   // Sync to localStorage only when machines or history updates for the CURRENT activeBlock
   useEffect(() => {
-    localStorage.setItem(`smart_hostel_laundry_machines_${activeBlock}`, JSON.stringify(machines));
+    if (loadedBlockRef.current === activeBlock) {
+      localStorage.setItem(`smart_hostel_laundry_machines_${activeBlock}`, JSON.stringify(machines));
+    }
   }, [machines, activeBlock]);
 
   useEffect(() => {
-    localStorage.setItem(`smart_hostel_laundry_history_${activeBlock}`, JSON.stringify(history));
+    if (loadedBlockRef.current === activeBlock) {
+      localStorage.setItem(`smart_hostel_laundry_history_${activeBlock}`, JSON.stringify(history));
+    }
   }, [history, activeBlock]);
 
   const handleBook = (e) => {
@@ -210,7 +219,7 @@ const LaundryTrackerView = ({ user }) => {
       )}
 
       {/* Telemetry Dashboard Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="grid-4" style={{ gap: '16px' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px', backgroundColor: 'var(--primary-light)', borderRadius: '50%' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -354,35 +363,37 @@ const LaundryTrackerView = ({ user }) => {
             {studentBookings.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textAlign: 'center', padding: '24px 0' }}>No laundry bookings registered under your account yet.</p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' }}>
-                    <th style={{ padding: '12px' }}>DATE</th>
-                    <th style={{ padding: '12px' }}>MACHINE</th>
-                    <th style={{ padding: '12px' }}>TIME SLOT</th>
-                    <th style={{ padding: '12px' }}>STATUS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studentBookings.map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)' }}>
-                      <td style={{ padding: '12px' }}>{row.date}</td>
-                      <td style={{ padding: '12px' }}>{row.machine}</td>
-                      <td style={{ padding: '12px' }}>{row.slot}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          color: row.color,
-                          backgroundColor: row.status === 'COMPLETED' ? 'var(--status-resolved-bg)' : 'var(--status-progress-bg)',
-                          padding: '4px 8px',
-                          borderRadius: '4px'
-                        }}>{row.status}</span>
-                      </td>
+              <div className="table-wrapper">
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' }}>
+                      <th style={{ padding: '12px' }}>DATE</th>
+                      <th style={{ padding: '12px' }}>MACHINE</th>
+                      <th style={{ padding: '12px' }}>TIME SLOT</th>
+                      <th style={{ padding: '12px' }}>STATUS</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {studentBookings.map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)' }}>
+                        <td style={{ padding: '12px' }}>{row.date}</td>
+                        <td style={{ padding: '12px' }}>{row.machine}</td>
+                        <td style={{ padding: '12px' }}>{row.slot}</td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: row.color,
+                            backgroundColor: row.status === 'COMPLETED' ? 'var(--status-resolved-bg)' : 'var(--status-progress-bg)',
+                            padding: '4px 8px',
+                            borderRadius: '4px'
+                          }}>{row.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </>
@@ -493,43 +504,45 @@ const LaundryTrackerView = ({ user }) => {
             {history.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textAlign: 'center', padding: '24px 0' }}>No reservations logged in the database yet.</p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' }}>
-                    <th style={{ padding: '12px' }}>DATE</th>
-                    <th style={{ padding: '12px' }}>STUDENT NAME</th>
-                    <th style={{ padding: '12px' }}>BLOCK & ROOM</th>
-                    <th style={{ padding: '12px' }}>MACHINE</th>
-                    <th style={{ padding: '12px' }}>TIME SLOT</th>
-                    <th style={{ padding: '12px' }}>STATUS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px', fontWeight: 600, color: 'var(--text-main)' }}>{row.date}</td>
-                      <td style={{ padding: '12px', fontWeight: 600, color: 'var(--primary)' }}>{row.studentName || 'Archan'}</td>
-                      <td style={{ padding: '12px', color: 'var(--text-main)' }}>
-                        <span style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px' }}>
-                          {row.block || 'Block F'} — {row.room || '103/3'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px', color: 'var(--text-main)' }}>{row.machine}</td>
-                      <td style={{ padding: '12px', color: 'var(--text-main)' }}>{row.slot}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          color: row.color,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          backgroundColor: row.status === 'COMPLETED' ? 'var(--status-resolved-bg)' : 'var(--status-progress-bg)'
-                        }}>{row.status}</span>
-                      </td>
+              <div className="table-wrapper">
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' }}>
+                      <th style={{ padding: '12px' }}>DATE</th>
+                      <th style={{ padding: '12px' }}>STUDENT NAME</th>
+                      <th style={{ padding: '12px' }}>BLOCK & ROOM</th>
+                      <th style={{ padding: '12px' }}>MACHINE</th>
+                      <th style={{ padding: '12px' }}>TIME SLOT</th>
+                      <th style={{ padding: '12px' }}>STATUS</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {history.map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '12px', fontWeight: 600, color: 'var(--text-main)' }}>{row.date}</td>
+                        <td style={{ padding: '12px', fontWeight: 600, color: 'var(--primary)' }}>{row.studentName || 'Archan'}</td>
+                        <td style={{ padding: '12px', color: 'var(--text-main)' }}>
+                          <span style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-canvas)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px' }}>
+                            {row.block || 'Block F'} — {row.room || '103/3'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px', color: 'var(--text-main)' }}>{row.machine}</td>
+                        <td style={{ padding: '12px', color: 'var(--text-main)' }}>{row.slot}</td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            color: row.color,
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: row.status === 'COMPLETED' ? 'var(--status-resolved-bg)' : 'var(--status-progress-bg)'
+                          }}>{row.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </>
@@ -555,6 +568,7 @@ const MessMenuView = ({ user }) => {
 
   const [activeBlock, setActiveBlock] = useState(blocks[0] || 'Block A');
   const [activeDay, setActiveDay] = useState('Monday');
+  const loadedBlockRef = React.useRef(activeBlock);
   
   // Persisted menu data
   const [menu, setMenu] = useState(() => {
@@ -755,19 +769,28 @@ const MessMenuView = ({ user }) => {
       setApprovals(defaultApprovals);
       localStorage.setItem(`smart_hostel_mess_approvals_${activeBlock}`, JSON.stringify(defaultApprovals));
     }
+
+    // Set the ref to denote loaded states are now aligned with activeBlock
+    loadedBlockRef.current = activeBlock;
   }, [activeBlock]);
 
   // Sync to localStorage only when menu, votes, or approvals updates for the CURRENT activeBlock
   useEffect(() => {
-    localStorage.setItem(`smart_hostel_mess_menu_${activeBlock}`, JSON.stringify(menu));
+    if (loadedBlockRef.current === activeBlock) {
+      localStorage.setItem(`smart_hostel_mess_menu_${activeBlock}`, JSON.stringify(menu));
+    }
   }, [menu, activeBlock]);
 
   useEffect(() => {
-    localStorage.setItem(`smart_hostel_mess_votes_${activeBlock}`, JSON.stringify(votes));
+    if (loadedBlockRef.current === activeBlock) {
+      localStorage.setItem(`smart_hostel_mess_votes_${activeBlock}`, JSON.stringify(votes));
+    }
   }, [votes, activeBlock]);
 
   useEffect(() => {
-    localStorage.setItem(`smart_hostel_mess_approvals_${activeBlock}`, JSON.stringify(approvals));
+    if (loadedBlockRef.current === activeBlock) {
+      localStorage.setItem(`smart_hostel_mess_approvals_${activeBlock}`, JSON.stringify(approvals));
+    }
   }, [approvals, activeBlock]);
 
   const mealNutrition = {
@@ -831,7 +854,7 @@ const MessMenuView = ({ user }) => {
         [activeDay]: nextDayVotes
       };
       
-      localStorage.setItem('smart_hostel_mess_votes', JSON.stringify(next));
+      localStorage.setItem(`smart_hostel_mess_votes_${activeBlock}`, JSON.stringify(next));
       return next;
     });
   };
@@ -932,17 +955,12 @@ const MessMenuView = ({ user }) => {
       )}
 
       {/* Weekday Switch Tabs */}
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        overflowX: 'auto',
-        paddingBottom: '8px',
-        borderBottom: '1px solid var(--border-color)'
-      }}>
+      <div className="tab-container">
         {Object.keys(menu).map(day => (
           <button
             key={day}
             onClick={() => setActiveDay(day)}
+            className="tab-button"
             style={{
               padding: '10px 18px',
               background: activeDay === day ? 'var(--primary)' : 'var(--bg-card)',
@@ -2093,18 +2111,21 @@ export const DashboardLayout = ({ children }) => {
               return prev;
             });
 
-            // 3. Purge laundry history of students who do not exist in the database
-            const savedLaundry = localStorage.getItem('smart_hostel_laundry_history');
-            if (savedLaundry) {
-              const laundryHistory = JSON.parse(savedLaundry);
-              const filteredLaundry = laundryHistory.filter(row => {
-                const rowNameLower = row.studentName?.toLowerCase();
-                return dbStudentNames.has(rowNameLower);
-              });
-              if (JSON.stringify(laundryHistory) !== JSON.stringify(filteredLaundry)) {
-                localStorage.setItem('smart_hostel_laundry_history', JSON.stringify(filteredLaundry));
+            // 3. Purge laundry history of students who do not exist in the database for all blocks
+            const blocksList = ['Block A', 'Block B', 'Block C', 'Block D', 'Block E', 'Block F'];
+            blocksList.forEach(block => {
+              const savedLaundry = localStorage.getItem(`smart_hostel_laundry_history_${block}`);
+              if (savedLaundry) {
+                const laundryHistory = JSON.parse(savedLaundry);
+                const filteredLaundry = laundryHistory.filter(row => {
+                  const rowNameLower = row.studentName?.toLowerCase();
+                  return dbStudentNames.has(rowNameLower);
+                });
+                if (JSON.stringify(laundryHistory) !== JSON.stringify(filteredLaundry)) {
+                  localStorage.setItem(`smart_hostel_laundry_history_${block}`, JSON.stringify(filteredLaundry));
+                }
               }
-            }
+            });
           }
         } catch (err) {
           console.error('Failed to sync invoices with database users:', err);
@@ -2343,6 +2364,26 @@ export const DashboardLayout = ({ children }) => {
             <span style={styles.brandTitle}>SmartHostel</span>
             <span style={styles.brandSubtitle}>Management System</span>
           </div>
+          {isMobile && (
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              style={{
+                marginLeft: 'auto',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                outline: 'none',
+              }}
+              title="Close Menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          )}
         </div>
 
         <nav style={styles.navMenu}>
@@ -2528,7 +2569,10 @@ export const DashboardLayout = ({ children }) => {
         </header>
 
         {/* Content Wrapper */}
-        <main style={styles.content}>
+        <main style={{
+          ...styles.content,
+          padding: isMobile ? '16px' : '30px'
+        }}>
           {activeSubFeature === 'laundry' ? <LaundryTrackerView user={user} /> :
            activeSubFeature === 'mess' ? <MessMenuView user={user} /> :
            activeSubFeature === 'fees' ? <RoomFeesView user={user} invoices={invoices} setInvoices={setInvoices} /> :
