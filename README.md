@@ -3,7 +3,7 @@
 A role-based hostel management platform built to streamline student and hostel administration processes — student registration, complaint management, and role-specific dashboards for Students, Rectors, and Admins.
 
 🔗 **Live Demo:** [hostel-managment-frontend.vercel.app](https://hostel-managment-frontend.vercel.app/login)
-🔗 **Backend Repo:** [Add backend repo link here]
+🔗 **Backend Repo:** https://github.com/nirav-dev-04/smart-hostel-management-system/tree/main
 
 ---
 
